@@ -8,7 +8,7 @@ Summaries of intro and advanced miniKanren hangout series. * Add one or two more
 * [Barliman Google Group](https://groups.google.com/forum/#!forum/barliman-editor)
 
 * [faster-miniKanren GitHub repo](https://github.com/michaelballantyne/faster-miniKanren)
-* [microKanren (also known as muKanren)](https://github.com/jasonhemann/microKanren)
+* [microKanren (also known as muKanren) GitHub repo](https://github.com/jasonhemann/microKanren)
 * [Barliman GitHub repo](https://github.com/webyrd/Barliman)
 
 ## Current Schedule
