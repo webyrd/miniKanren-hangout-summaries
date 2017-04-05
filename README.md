@@ -19,7 +19,7 @@ Summaries of intro and advanced miniKanren hangout series. * Add one or two more
 
 ## Recaps of Prior Hangouts
 ### Advanced (2017-04-02)
-* Youtube link
+* Youtube link: https://www.youtube.com/watch?v=B7Tglu-1_NQ
 * ~3-40 minutes, Michael1 asks if it might be possible to use mk to facilitate network configuration.  Various attempts are made to formulate more precisely what this might mean
   * Related Links: http://www.cs.cornell.edu/~jnfoster/papers/frenetic-netkat.pdf
 * ~40-80 minutes, Will describes a tricky problem with the current Barliman, in which the user has made a "clear" mistake, Barliman, instead of complaining, cleverly finds a way to code around the issue -- not necessarily the message one want to put across in a pedagogic setting.
