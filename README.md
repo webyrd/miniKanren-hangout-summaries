@@ -31,14 +31,15 @@ Summaries of intro and advanced miniKanren hangout series. * Add one or two more
     * https://github.com/miniKanren/simple-miniKanren/blob/master/mk.scm#L201 
     * https://github.com/miniKanren/simple-miniKanren/blob/master/mk.scm#L178
 
-### Advanced #1 (2017-03-26)
-* Youtube link: https://www.youtube.com/watch?v=QZaTB92NKHM
-* Topics: Quick Barliman overview, implementation of faster-miniKanren (https://github.com/michaelballantyne/faster-miniKanren), and more!
-
 ### Intro #2 (2017-04-01)
 * Youtube link: https://www.youtube.com/watch?v=s8d8uhU-_SY
 * Topics: More examples of recursion in Scheme, deep recursion over nested lists, brief description of Scheme macros, a pattern matching macro for Scheme, parsing lambda calculus expressions.
 * Code: https://github.com/webyrd/miniKanren-hangout-summaries/tree/master/code/intro-hangouts/intro-hangout-2
+
+
+### Advanced #1 (2017-03-26)
+* Youtube link: https://www.youtube.com/watch?v=QZaTB92NKHM
+* Topics: Quick Barliman overview, implementation of faster-miniKanren (https://github.com/michaelballantyne/faster-miniKanren), and more!
 
 ### Intro #1 (2017-03-25)
 * Youtube link: https://www.youtube.com/watch?v=a5p8DPbaokE
