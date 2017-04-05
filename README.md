@@ -2,11 +2,14 @@
 Summaries of intro and advanced miniKanren hangout series. * Add one or two more explanatory sentences *
 
 ## Quick Links
+* [miniKanren website](http://minikanren.org/)
+* [miniKanren Google Group](https://groups.google.com/forum/#!forum/minikanren)
+* [miniKanren Uncourse Google Group](https://groups.google.com/forum/#!forum/minikanren-uncourse)
+* [Barliman Google Group](https://groups.google.com/forum/#!forum/barliman-editor)
 
-| minikanren website | youtube channel(s) | minikanren mailing list |
-|--------------------|--------------------|-------------------------|
-| barliman list | faster-mk | simple-mk |
-|  mukanren | What else |  |
+* [faster-miniKanren GitHub repo](https://github.com/michaelballantyne/faster-miniKanren)
+* [microKanren (also known as muKanren)](https://github.com/jasonhemann/microKanren)
+* [Barliman GitHub repo](https://github.com/webyrd/Barliman)
 
 ## Current Schedule
 * Intro: Saturdays, 3PM EST
@@ -49,12 +52,3 @@ Summaries of intro and advanced miniKanren hangout series. * Add one or two more
 * Add the newest recaps at the top of the list 
 * Add annotations of any other mk videos/events, not just the hangous e.g. clojure conferences etc. 
 * Thanks!
-
-
-
-
-
-
-
-
-
