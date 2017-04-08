@@ -2,11 +2,14 @@
 Summaries of intro and advanced miniKanren hangout series. * Add one or two more explanatory sentences *
 
 ## Quick Links
+* [miniKanren website](http://minikanren.org/)
+* [miniKanren Google Group](https://groups.google.com/forum/#!forum/minikanren)
+* [miniKanren Uncourse Google Group](https://groups.google.com/forum/#!forum/minikanren-uncourse)
+* [Barliman Google Group](https://groups.google.com/forum/#!forum/barliman-editor)
 
-| minikanren website | youtube channel(s) | minikanren mailing list |
-|--------------------|--------------------|-------------------------|
-| barliman list | faster-mk | simple-mk |
-|  mukanren | What else |  |
+* [faster-miniKanren GitHub repo](https://github.com/michaelballantyne/faster-miniKanren)
+* [microKanren (also known as muKanren) GitHub repo](https://github.com/jasonhemann/microKanren)
+* [Barliman GitHub repo](https://github.com/webyrd/Barliman)
 
 ## Current Schedule
 * Intro: Saturdays, 3PM EST
@@ -18,7 +21,7 @@ Summaries of intro and advanced miniKanren hangout series. * Add one or two more
 * Everyone, add suggestions here, and Will will curate the list
 
 ## Recaps of Prior Hangouts
-### Advanced (2017-04-02)
+### Advanced #2 (2017-04-02)
 * Youtube link: https://www.youtube.com/watch?v=B7Tglu-1_NQ
 * ~3-40 minutes, Michael1 asks if it might be possible to use mk to facilitate network configuration.  Various attempts are made to formulate more precisely what this might mean
   * Related Links: http://www.cs.cornell.edu/~jnfoster/papers/frenetic-netkat.pdf
@@ -28,6 +31,19 @@ Summaries of intro and advanced miniKanren hangout series. * Add one or two more
     * https://github.com/miniKanren/simple-miniKanren/blob/master/mk.scm#L201 
     * https://github.com/miniKanren/simple-miniKanren/blob/master/mk.scm#L178
 
+### Advanced #1 (2017-03-26)
+* Youtube link: https://www.youtube.com/watch?v=QZaTB92NKHM
+* Topics: Quick Barliman overview, implementation of faster-miniKanren (https://github.com/michaelballantyne/faster-miniKanren), and more!
+
+### Intro #2 (2017-04-01)
+* Youtube link: https://www.youtube.com/watch?v=s8d8uhU-_SY
+* Topics: More examples of recursion in Scheme, deep recursion over nested lists, brief description of Scheme macros, a pattern matching macro for Scheme, parsing lambda calculus expressions.
+* Code: https://github.com/webyrd/miniKanren-hangout-summaries/tree/master/code/intro-hangouts/intro-hangout-2
+
+### Intro #1 (2017-03-25)
+* Youtube link: https://www.youtube.com/watch?v=a5p8DPbaokE
+* Topics: basic Scheme, lists and pairs, conditional expressions, definitions, recursion, how to think recursively.
+
 ## Meta
 * Meta will be moved elsewhere
 * You are encouraged to ask for push permission.  If you are considering following this repo, just ask for push bits instead. 
@@ -36,12 +52,3 @@ Summaries of intro and advanced miniKanren hangout series. * Add one or two more
 * Add the newest recaps at the top of the list 
 * Add annotations of any other mk videos/events, not just the hangous e.g. clojure conferences etc. 
 * Thanks!
-
-
-
-
-
-
-
-
-
