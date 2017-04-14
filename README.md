@@ -22,7 +22,7 @@ Summaries of intro and advanced miniKanren hangout series. * Add one or two more
 
 ## Recaps of Prior Hangouts
 
-### Advanced #2 (2017-04-09)
+### Advanced #3 (2017-04-09)
 * Youtube link: https://www.youtube.com/edit?video_id=OfrR1pm8q6g
 * Topics: Greg walks through the improvements and optimizations that radically sped up the relational interpreter used by Barliman.
 
