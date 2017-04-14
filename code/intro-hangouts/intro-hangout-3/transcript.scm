@@ -543,4 +543,9 @@ Type (debug) to enter the debugger.
         y)
       x))
 (7 5)
-> 
+ >
+(let ((x (+ 2 3)))
+  (let ((x 7))
+    x))
+
+
