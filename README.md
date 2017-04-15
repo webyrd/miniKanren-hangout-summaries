@@ -16,11 +16,16 @@ Summaries of intro and advanced miniKanren hangout series. * Add one or two more
 * Advanced: Sundays, 3PM EST
 
 ## Planning/Agenda for next hangout:
-### Advanced (2017-04-09)
-* Greg talks about Barliman
+### Advanced (2017-04-16)
+* Luke will pose a problem related to CAD design that might be appropriate for logic programming/constraint logic programming.  If time allows, Will will describe the experiments he made this week (https://github.com/webyrd/n-grams-for-synthesis) that might improve performance of the relational interpreter by guiding the search based on what real-world Scheme programs look like.
 * Everyone, add suggestions here, and Will will curate the list
 
 ## Recaps of Prior Hangouts
+
+### Advanced #3 (2017-04-09)
+* Youtube link: https://www.youtube.com/watch?v=OfrR1pm8q6g
+* Topics: Greg walks through the improvements and optimizations that radically sped up the relational interpreter used by Barliman.
+
 ### Advanced #2 (2017-04-02)
 * Youtube link: https://www.youtube.com/watch?v=B7Tglu-1_NQ
 * ~3-40 minutes, Michael1 asks if it might be possible to use mk to facilitate network configuration.  Various attempts are made to formulate more precisely what this might mean
@@ -34,6 +39,12 @@ Summaries of intro and advanced miniKanren hangout series. * Add one or two more
 ### Advanced #1 (2017-03-26)
 * Youtube link: https://www.youtube.com/watch?v=QZaTB92NKHM
 * Topics: Quick Barliman overview, implementation of faster-miniKanren (https://github.com/michaelballantyne/faster-miniKanren), and more!
+
+### Intro #3 (2017-04-08)
+* Note: Will's internet went down during the end of hangout, so this hangout is recorded in two parts (the second part is short)
+* Youtube links: https://www.youtube.com/edit?video_id=8-HUiRt6nJw (Part 1), https://www.youtube.com/edit?video_id=Of5sdH_ZAQs (Part 2)
+* Topics: Answering questions from the previous hangout, a unexpected lesson how to learn about the details of a programming language (a happy accident/learning opportunity), more examples of Scheme macros, lexical scope and shadowing.
+* Code transcripts: https://github.com/webyrd/miniKanren-hangout-summaries/blob/master/code/intro-hangouts/intro-hangout-3/transcript-part1.scm (Part 1), https://github.com/webyrd/miniKanren-hangout-summaries/blob/master/code/intro-hangouts/intro-hangout-3/transcript-part2.scm (Part 2)
 
 ### Intro #2 (2017-04-01)
 * Youtube link: https://www.youtube.com/watch?v=s8d8uhU-_SY
