@@ -40,6 +40,11 @@ Summaries of intro and advanced miniKanren hangout series. * Add one or two more
 * Youtube link: https://www.youtube.com/watch?v=QZaTB92NKHM
 * Topics: Quick Barliman overview, implementation of faster-miniKanren (https://github.com/michaelballantyne/faster-miniKanren), and more!
 
+### Intro #4 (2017-04-15)
+* Youtube link: https://www.youtube.com/watch?v=oV-5az3yNxA
+* Topics: Environments, writing a simple test macro, writing a simple environment-passing interpreter for a subset of Scheme, creating a recursive function without using 'define' or 'letrec'.
+* Code: https://github.com/webyrd/miniKanren-hangout-summaries/tree/master/code/intro-hangouts/intro-hangout-4
+
 ### Intro #3 (2017-04-08)
 * Note: Will's internet went down during the end of hangout, so this hangout is recorded in two parts (the second part is short)
 * Youtube links: https://www.youtube.com/edit?video_id=8-HUiRt6nJw (Part 1), https://www.youtube.com/edit?video_id=Of5sdH_ZAQs (Part 2)
