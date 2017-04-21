@@ -16,11 +16,17 @@ Summaries of intro and advanced miniKanren hangout series. * Add one or two more
 * Advanced: Sundays, 3PM EST
 
 ## Planning/Agenda for next hangout:
-### Advanced (2017-04-16)
-* Luke will pose a problem related to CAD design that might be appropriate for logic programming/constraint logic programming.  If time allows, Will will describe the experiments he made this week (https://github.com/webyrd/n-grams-for-synthesis) that might improve performance of the relational interpreter by guiding the search based on what real-world Scheme programs look like.
+### Advanced (2017-04-23)
+* David and Orchid will describe their work on map coloring in miniKanren.
 * Everyone, add suggestions here, and Will will curate the list
+### Intro (2017-04-22)
+* Higher-order and first-order respresentations of environments and procedures; higher-order version of Scheme interpreter.
 
 ## Recaps of Prior Hangouts
+
+### Advanced #4 (2017-04-16)
+* Youtube link: https://www.youtube.com/watch?v=u3xjelzmC20
+* Topics: Luke describes how we has extended a Python version of miniKanren with interval arithmetic constraints to solve problems in naval architecture/ship hull design.  Will describes experiments he made this week (https://github.com/webyrd/n-grams-for-synthesis) that might improve performance of the relational interpreter by guiding the search based on what real-world Scheme programs look like.
 
 ### Advanced #3 (2017-04-09)
 * Youtube link: https://www.youtube.com/watch?v=OfrR1pm8q6g
