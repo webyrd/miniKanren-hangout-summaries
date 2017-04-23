@@ -15,6 +15,104 @@
                      expected-val
                      v))))]))
 
+#|
+(define eval-expr
+  (lambda (expr env)
+    (pmatch expr
+      [,x (guard (symbol? x))
+       (env x)]
+      [(lambda (,x) ,body) (guard (symbol? x))
+       (lambda (arg)
+         (eval-expr body (lambda (y)
+                           (if (eq? x y)
+                               arg
+                               (env y)))))]
+      [(,rator ,rand)
+       ((eval-expr rator env) (eval-expr rand env))])))
+|#
+
+(define eval-expr
+  (lambda (expr env)
+    (pmatch expr
+      [,n (guard (number? n))
+       n]
+      [(zero? ,e)
+       (zero? (eval-expr e env))]      
+      [(add1 ,e)
+       (add1 (eval-expr e env))]
+      [(sub1 ,e)
+       (sub1 (eval-expr e env))]
+      [(* ,e1 ,e2)
+       (* (eval-expr e1 env) (eval-expr e2 env))]
+      [(+ ,e1 ,e2)
+       (+ (eval-expr e1 env) (eval-expr e2 env))]     
+      [(if ,e1 ,e2 ,e3)
+       (if (eval-expr e1 env)
+           (eval-expr e2 env)
+           (eval-expr e3 env))]
+      #|
+      [(let ((,x ,e)) ,body) (guard (symbol? x))
+       (eval-expr `((lambda (,x) ,body) ,e) env)]
+      |#
+      
+      [(let ((,x ,e)) ,body) (guard (symbol? x))
+       (let ((arg (eval-expr e env)))
+         (eval-expr body (lambda (y)
+                           (if (eq? x y)
+                               arg
+                               (env y)))))]
+      
+      [,x (guard (symbol? x))
+       (env x)]
+      [(lambda (,x) ,body) (guard (symbol? x))
+       (lambda (arg)
+         (eval-expr body (lambda (y)
+                           (if (eq? x y)
+                               arg
+                               (env y)))))]
+      [(,rator ,rand)
+       ((eval-expr rator env) (eval-expr rand env))])))
+
+
+(define my-eval
+  (lambda (expr)
+    (eval-expr expr (lambda (y) (error 'lookup "unbound variable")))))
+
+(my-eval '(lambda (z) z))
+
+(test "let 1"
+  (my-eval '(let ((z (* 3 4))) (sub1 z)))
+  11)
+
+(test "let 2"
+  (my-eval '(let ((x (sub1 6)))
+              (let ((f (lambda (y) (+ y x))))
+                (let ((x (* 3 4)))
+                  (f x)))))
+  17)
+
+(test "! 5"
+  (my-eval '(((lambda (!)
+                (lambda (n)
+                  ((! !) n)))
+              (lambda (!)
+                (lambda (n)
+                  (if (zero? n)
+                      1
+                      (* n ((! !) (sub1 n)))))))
+             5))
+  120)
+
+
+
+
+
+
+
+
+#!eof
+
+
 (define empty-env
   '())
 
