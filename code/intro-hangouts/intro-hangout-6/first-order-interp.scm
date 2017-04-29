@@ -21,9 +21,6 @@
 
 (define lookup
   (lambda (y env^)
-    (printf "calling lookup\n")
-    (printf "y: ~s\n" y)
-    (printf "env^: ~s\n" env^)
     (pmatch env^
       ((empty-env)
        (error 'lookup (format "unbound variable ~s" y)))
@@ -31,18 +28,12 @@
        (if (eq? x y)
            val
            (lookup y env)))
-      ((letrec-env ((,f . (half-closure ,x ,f-body))
-                    (,g . (half-closure ,y ,g-body)))
+      ((letrec-env ((,f . (half-closure ,f-x ,f-body))
+                    (,g . (half-closure ,g-x ,g-body)))
                    ,env)
-       (printf "in letrec-env case\n")
-       (printf "y: ~s\n" y)
-       (printf "looking up y in: ~s\n"
-               `((,f . (half-closure ,f-x ,f-body))
-                 (,g . (half-closure ,g-x ,g-body))))
        (let ((hc
               (assq y `((,f . (half-closure ,f-x ,f-body))
                         (,g . (half-closure ,g-x ,g-body))))))
-         (printf "hc: ~s\n" hc)
          (pmatch hc
            [(,h . (half-closure ,h-x ,h-body))
             `(closure ,h-x ,h-body ,env^)]
