@@ -17,20 +17,46 @@
 
 
 (define empty-env
-  '())
+  '(empty-env))
 
 (define lookup
-  (lambda (x env)
-    (cond
-      ((null? env)
-       (error 'lookup (format "unbound variable ~s" x)))
-      ((eq? (caar env) x)
-       (cdar env))
-      (else (lookup x (cdr env))))))
+  (lambda (y env^)
+    (printf "calling lookup\n")
+    (printf "y: ~s\n" y)
+    (printf "env^: ~s\n" env^)
+    (pmatch env^
+      ((empty-env)
+       (error 'lookup (format "unbound variable ~s" y)))
+      ((ext-env ,x ,val ,env)
+       (if (eq? x y)
+           val
+           (lookup y env)))
+      ((letrec-env ((,f . (half-closure ,x ,f-body))
+                    (,g . (half-closure ,y ,g-body)))
+                   ,env)
+       (printf "in letrec-env case\n")
+       (printf "y: ~s\n" y)
+       (printf "looking up y in: ~s\n"
+               `((,f . (half-closure ,f-x ,f-body))
+                 (,g . (half-closure ,g-x ,g-body))))
+       (let ((hc
+              (assq y `((,f . (half-closure ,f-x ,f-body))
+                        (,g . (half-closure ,g-x ,g-body))))))
+         (printf "hc: ~s\n" hc)
+         (pmatch hc
+           [(,h . (half-closure ,h-x ,h-body))
+            `(closure ,h-x ,h-body ,env^)]
+           [#f (lookup y env)]))))))
+
+(define eval
+  (lambda (expr)
+    (expr-expr expr empty-env)))
 
 (define eval-expr
   (lambda (expr env)
     (pmatch expr
+      [,b (guard (boolean? b))
+       b]      
       [,n (guard (number? n))
        n]
       [(zero? ,e)
@@ -49,6 +75,13 @@
        (lookup x env)]
       [(lambda (,x) ,body) (guard (symbol? x)) ; lambda/abstraction
        `(closure ,x ,body ,env)]
+      [(letrec ((,f (lambda (,f-x) ,f-body))
+                (,g (lambda (,g-x) ,g-body)))
+         ,letrec-body)
+       (eval-expr letrec-body
+                  `(letrec-env ((,f . (half-closure ,f-x ,f-body))
+                                (,g . (half-closure ,g-x ,g-body)))
+                               ,env))]
       [(,rator ,rand) ;application
        (apply-proc (eval-expr rator env) (eval-expr rand env))])))
 
@@ -56,7 +89,7 @@
   (lambda (proc val)
     (pmatch proc
       [(closure ,x ,body ,env)
-       (eval-expr body `((,x . ,val) . ,env))])))
+       (eval-expr body `(ext-env ,x ,val ,env))])))
 
 (test "! 5"
   (eval-expr '(((lambda (!)
@@ -72,11 +105,11 @@
   120)
 
 (test "eval-expr lambda"
-  (eval-expr '(lambda (y) (* y y)) '((z . 17)))
-  '(closure y (* y y) ((z . 17))))
+  (eval-expr '(lambda (y) (* y y)) `(ext-env z 17 ,empty-env))
+  '(closure y (* y y) (ext-env z 17 (empty-env))))
 
 (test "eval-expr app  1"
-  (eval-expr '((lambda (y) (* y y)) (add1 5)) '((z . 17)))
+  (eval-expr '((lambda (y) (* y y)) (add1 5)) `(ext-env z 17 ,empty-env))
   36)
 
 (test "eval-expr app  2"
@@ -89,11 +122,11 @@
   30)
 
 (test "eval-expr var"
-  (eval-expr 'y '((y . 5)))
+  (eval-expr 'y `(ext-env y 5 ,empty-env))
   5)
 
 (test "eval-expr var/add1"
-  (eval-expr '(add1 y) '((y . 5)))
+  (eval-expr '(add1 y) `(ext-env y 5 ,empty-env))
   6)
 
 (test "eval-expr num"
@@ -151,4 +184,31 @@
 (test "eval-expr if  3"
   (eval-expr '(if (zero? (* 3 4)) (add1 6) (sub1 6)) empty-env)
   5)
+
+(test "eval-expr letrec even? 6"
+  (eval-expr '(letrec ((even? (lambda (n)
+                                (if (zero? n)
+                                    #t
+                                    (odd? (sub1 n)))))
+                       (odd? (lambda (n)
+                               (if (zero? n)
+                                   #f
+                                   (even? (sub1 n))))))
+                (even? 6))
+             empty-env)
+  #t)
+
+(test "eval-expr letrec even? 5"
+  (eval-expr '(letrec ((even? (lambda (n)
+                                (if (zero? n)
+                                    #t
+                                    (odd? (sub1 n)))))
+                       (odd? (lambda (n)
+                               (if (zero? n)
+                                   #f
+                                   (even? (sub1 n))))))
+                (even? 5))
+             empty-env)
+  #f)
+
 
