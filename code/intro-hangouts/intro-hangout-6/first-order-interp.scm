@@ -28,12 +28,8 @@
        (if (eq? x y)
            val
            (lookup y env)))
-      ((letrec-env ((,f . (half-closure ,f-x ,f-body))
-                    (,g . (half-closure ,g-x ,g-body)))
-                   ,env)
-       (let ((hc
-              (assq y `((,f . (half-closure ,f-x ,f-body))
-                        (,g . (half-closure ,g-x ,g-body))))))
+      ((letrec-env ,bindings ,env)
+       (let ((hc (assq y bindings)))
          (pmatch hc
            [(,h . (half-closure ,h-x ,h-body))
             `(closure ,h-x ,h-body ,env^)]
@@ -66,15 +62,29 @@
        (lookup x env)]
       [(lambda (,x) ,body) (guard (symbol? x)) ; lambda/abstraction
        `(closure ,x ,body ,env)]
-      [(letrec ((,f (lambda (,f-x) ,f-body))
-                (,g (lambda (,g-x) ,g-body)))
-         ,letrec-body)
-       (eval-expr letrec-body
-                  `(letrec-env ((,f . (half-closure ,f-x ,f-body))
-                                (,g . (half-closure ,g-x ,g-body)))
-                               ,env))]
+      [(letrec ,bindings ,letrec-body)
+       (guard (legal-letrec-bindings? bindings))
+       (let ((processed-bindings
+              (map
+               (lambda (binding)
+                 (pmatch binding
+                   [(,f (lambda (,f-x) ,f-body))
+                    `(,f . (half-closure ,f-x ,f-body))]))
+               bindings)))
+         (eval-expr letrec-body
+                    `(letrec-env ,processed-bindings ,env)))]
       [(,rator ,rand) ;application
        (apply-proc (eval-expr rator env) (eval-expr rand env))])))
+
+(define legal-letrec-bindings?
+  (lambda (bindings)
+    (andmap
+     (lambda (binding)
+       (pmatch binding
+         [(,f (lambda (,f-x) ,f-body))
+          #t]
+         [,else #f]))
+     bindings)))
 
 (define apply-proc
   (lambda (proc val)
@@ -201,5 +211,3 @@
                 (even? 5))
              empty-env)
   #f)
-
-
