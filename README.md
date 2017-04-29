@@ -16,13 +16,16 @@ Summaries of intro and advanced miniKanren hangout series. * Add one or two more
 * Advanced: Sundays, 3PM EST
 
 ## Planning/Agenda for next hangout:
-### Advanced (2017-04-23)
-* David and Orchid will describe their work on map coloring in miniKanren.
-* Everyone, add suggestions here, and Will will curate the list
-### Intro (2017-04-22)
-* Higher-order and first-order respresentations of environments and procedures; higher-order version of Scheme interpreter.
+### Advanced (2017-04-30)
+* TBD
+### Intro (2017-04-29)
+* Adding recursive definitions to the interpreter.  Other interpreter stuff!
 
 ## Recaps of Prior Hangouts
+
+### Advanced #5 (2017-04-23)
+* Youtube link: https://www.youtube.com/watch?v=KTS5XYeZZW4
+* Topics: Will proposes an idea for handling arithmetic in Barliman, which gets shot down, but leads to a discussion of different ways the educational version of Barliman might be able to perform arithmetic. Orchid describes how to efficiently color maps using a combination of Scheme and miniKanren (https://orchid-hybrid-2.github.io/), based on an article by John McCarthy (http://www-formal.stanford.edu/jmc/coloring/coloring.html).
 
 ### Advanced #4 (2017-04-16)
 * Youtube link: https://www.youtube.com/watch?v=u3xjelzmC20
@@ -45,6 +48,11 @@ Summaries of intro and advanced miniKanren hangout series. * Add one or two more
 ### Advanced #1 (2017-03-26)
 * Youtube link: https://www.youtube.com/watch?v=QZaTB92NKHM
 * Topics: Quick Barliman overview, implementation of faster-miniKanren (https://github.com/michaelballantyne/faster-miniKanren), and more!
+
+### Intro #5 (2017-04-22)
+* Youtube link: https://www.youtube.com/watch?v=2eYPZ5ztTUw
+* Topics: Higher-order Scheme interpreter, call-by-value, lexical scope vs. dynamic scope, representation independence.
+* Code: https://github.com/webyrd/miniKanren-hangout-summaries/tree/master/code/intro-hangouts/intro-hangout-5
 
 ### Intro #4 (2017-04-15)
 * Youtube link: https://www.youtube.com/watch?v=oV-5az3yNxA
