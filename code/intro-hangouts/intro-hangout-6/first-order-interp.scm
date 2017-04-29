@@ -47,11 +47,15 @@
       [,n (guard (number? n))
        n]
       [(zero? ,e)
-       (zero? (eval-expr e env))]      
+       (zero? (eval-expr e env))]
+      [(negative? ,e)
+       (negative? (eval-expr e env))]
       [(add1 ,e)
        (add1 (eval-expr e env))]
       [(sub1 ,e)
        (sub1 (eval-expr e env))]
+      [(- ,e)
+       (- (eval-expr e env))]
       [(* ,e1 ,e2)
        (* (eval-expr e1 env) (eval-expr e2 env))]
       [(if ,e1 ,e2 ,e3)
@@ -74,17 +78,21 @@
          (eval-expr letrec-body
                     `(letrec-env ,processed-bindings ,env)))]
       [(,rator ,rand) ;application
-       (apply-proc (eval-expr rator env) (eval-expr rand env))])))
+       (apply-proc (eval-expr rator env) (eval-expr rand env))]
+      [,else (error 'eval-expr
+                    (format "unknown expression type: ~s\n"
+                            expr))])))
 
 (define legal-letrec-bindings?
   (lambda (bindings)
-    (andmap
-     (lambda (binding)
-       (pmatch binding
-         [(,f (lambda (,f-x) ,f-body))
-          #t]
-         [,else #f]))
-     bindings)))
+    (and (list? bindings)
+         (andmap
+          (lambda (binding)
+            (pmatch binding
+              [(,f (lambda (,f-x) ,f-body))
+               #t]
+              [,else #f]))
+          bindings))))
 
 (define apply-proc
   (lambda (proc val)
@@ -211,3 +219,43 @@
                 (even? 5))
              empty-env)
   #f)
+
+(test "eval-expr letrec even? negative 5"
+  (eval-expr '(letrec ((even? (lambda (n)
+                                (if (negative? n)
+                                    ((negative n) even?)
+                                    (if (zero? n)
+                                        #t
+                                        (odd? (sub1 n))))))
+                       (odd? (lambda (n)
+                               (if (negative? n)
+                                   ((negative n) odd?)
+                                   (if (zero? n)
+                                       #f
+                                       (even? (sub1 n))))))
+                       (negative (lambda (n)
+                                   (lambda (f)
+                                     (f (- n))))))
+                (even? -5))
+             empty-env)
+  #f)
+
+(test "eval-expr letrec even? negative 6"
+  (eval-expr '(letrec ((even? (lambda (n)
+                                (if (negative? n)
+                                    ((negative n) even?)
+                                    (if (zero? n)
+                                        #t
+                                        (odd? (sub1 n))))))
+                       (odd? (lambda (n)
+                               (if (negative? n)
+                                   ((negative n) odd?)
+                                   (if (zero? n)
+                                       #f
+                                       (even? (sub1 n))))))
+                       (negative (lambda (n)
+                                   (lambda (f)
+                                     (f (- n))))))
+                (even? -6))
+             empty-env)
+  #t)
