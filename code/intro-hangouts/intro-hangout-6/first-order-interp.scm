@@ -35,10 +35,6 @@
             `(closure ,h-x ,h-body ,env^)]
            [#f (lookup y env)]))))))
 
-(define eval
-  (lambda (expr)
-    (expr-expr expr empty-env)))
-
 (define eval-expr
   (lambda (expr env)
     (pmatch expr
