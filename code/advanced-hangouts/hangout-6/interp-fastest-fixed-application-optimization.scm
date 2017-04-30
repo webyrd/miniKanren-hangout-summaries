@@ -344,9 +344,11 @@
          (== `(,rator . ,rands) expr)
          ;; Multi-argument
          ((make-eval-expo 'app-rator) rator env `(closure (lambda ,x* ,body) ,env^))
-         (eval-listo rands env a* 'app-rand*)
+         ;; (eval-listo rands env a* 'app-rand*)
          (ext-env*o x* a* env^ res)
-         ((make-eval-expo 'lambda-multi) body res val)))
+         (eval-application rands env a* ((make-eval-expo 'lambda-multi) body res val))
+         ;; ((make-eval-expo 'lambda-multi) body res val)
+         ))
 
       ((fresh (rator x rands body env^ a* res)
          (== `(,rator . ,rands) expr)
@@ -498,9 +500,11 @@
          (== `(,rator . ,rands) expr)
          ;; Multi-argument
          ((make-eval-expo 'app-rator) rator env `(closure (lambda ,x* ,body) ,env^))
-         (eval-listo rands env a* 'app-rand*)
+         ;; (eval-listo rands env a* 'app-rand*)
          (ext-env*o x* a* env^ res)
-         ((make-eval-expo 'lambda-multi) body res val)))
+         (eval-application rands env a* ((make-eval-expo 'lambda-multi) body res val))
+         ;;((make-eval-expo 'lambda-multi) body res val)
+         ))
 
       ((fresh (rator x rands body env^ a* res)
          (== `(,rator . ,rands) expr)
@@ -639,9 +643,11 @@
          (== `(,rator . ,rands) expr)
          ;; Multi-argument
          ((make-eval-expo 'app-rator) rator env `(closure (lambda ,x* ,body) ,env^))
-         (eval-listo rands env a* 'app-rand*)
+         ;; (eval-listo rands env a* 'app-rand*)
          (ext-env*o x* a* env^ res)
-         ((make-eval-expo 'lambda-multi) body res val)))
+         (eval-application rands env a* ((make-eval-expo 'lambda-multi) body res val))
+         ;; ((make-eval-expo 'lambda-multi) body res val)
+         ))
 
       ((fresh (rator x rands body env^ a* res)
          (== `(,rator . ,rands) expr)
@@ -1111,9 +1117,11 @@
          (== `(,rator . ,rands) expr)
          ;; Multi-argument
          ((make-eval-expo 'app-rator) rator env `(closure (lambda ,x* ,body) ,env^))
-         (eval-listo rands env a* 'app-rand*)
+         ;; (eval-listo rands env a* 'app-rand*)
          (ext-env*o x* a* env^ res)
-         ((make-eval-expo 'lambda-multi) body res val)))
+         (eval-application rands env a* ((make-eval-expo 'lambda-multi) body res val))
+         ;; ((make-eval-expo 'lambda-multi) body res val)
+         ))
 
       ((fresh (rator x rands body env^ a* res)
          (== `(,rator . ,rands) expr)
@@ -1256,9 +1264,11 @@
          (== `(,rator . ,rands) expr)
          ;; Multi-argument
          ((make-eval-expo 'app-rator) rator env `(closure (lambda ,x* ,body) ,env^))
-         (eval-listo rands env a* 'app-rand*)
+         ;; (eval-listo rands env a* 'app-rand*)
          (ext-env*o x* a* env^ res)
-         ((make-eval-expo 'lambda-multi) body res val)))
+         (eval-application rands env a* ((make-eval-expo 'lambda-multi) body res val))
+         ;; ((make-eval-expo 'lambda-multi) body res val)
+         ))
 
       ((fresh (rator x rands body env^ a* res)
          (== `(,rator . ,rands) expr)
