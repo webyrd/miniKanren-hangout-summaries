@@ -923,6 +923,67 @@
                 s
                 (cons (car l) (append (cdr l) s)))))))
 
+(time (test "fast-append-19-with-appendos-on-recursive-args"
+        (run 1 (code)
+          (fresh (q r s t u v w val)
+            (absento 'a code)
+            (absento 'b code)
+            (absento 'c code)
+            (absento 'd code)
+            (absento 'e code)
+            (absento 'f code)
+            (absento 's u)
+            (absento 'append u)
+            (absento 'l v)
+            (absento 'append v)
+            (== `(lambda (l s)
+                   (if (null? l)
+                       s
+                       (cons (car l) (append (,u . ,v) ,w))))
+                code)
+            (evalo
+             `(letrec ((append ,code))
+                (list
+                 (append '() 'a)
+                 (append '(b) 'c)
+                 (append '(d e) 'f)))
+             val)))
+        '((lambda (l s)
+            (if (null? l)
+                s
+                (cons (car l) (append (cdr l) s)))))))
+
+(time (test "slow-append-19-with-appendos-on-recursive-args"
+        (run 1 (code)
+          (fresh (q r s t u v w val)
+            (absento 'a code)
+            (absento 'b code)
+            (absento 'c code)
+            (absento 'd code)
+            (absento 'e code)
+            (absento 'f code)
+            (absento 's u)
+            (absento 'append u)
+            (absento 'l v)
+            (absento 'append v)
+            (== `(lambda (l s)
+                   (if (null? l)
+                       s
+                       (cons (car l) (append ,u ,v))))
+                code)
+            (evalo
+             `(letrec ((append ,code))
+                (list
+                 (append '() 'a)
+                 (append '(b) 'c)
+                 (append '(d e) 'f)))
+             val)))
+        '((lambda (l s)
+            (if (null? l)
+                s
+                (cons (car l) (append (cdr l) s)))))))
+
+
 (time (test "append-19g"
         (run 1 (code)
           (fresh (q r s t u v w)
