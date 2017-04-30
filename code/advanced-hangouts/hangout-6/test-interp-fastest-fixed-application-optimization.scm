@@ -3,6 +3,35 @@
 (load "interp-fastest-fixed-application-optimization.scm")
 (load "test-check.scm")
 
+(time (test "synthesize-all-of-append"
+        (run 1 (code)
+          (fresh (q r s t u v w)
+            (absento 'a code)
+            (absento 'b code)
+            (absento 'c code)
+            (absento 'd code)
+            (absento 'e code)
+            (absento 'f code)
+            (evalo
+             `(letrec ((append ,code))
+                (list
+                 (append '() 'a)
+                 (append '(b) 'c)
+                 (append '(d e) 'f)))
+             '(a
+               (b . c)
+               (d e . f)))))
+        '(((lambda (_.0 _.1)
+             (if (null? _.0)
+                 _.1
+                 (cons (car _.0) (append (cdr _.0) _.1))))
+           (=/= ((_.0 _.1)) ((_.0 a)) ((_.0 append)) ((_.0 b)) ((_.0 c))
+                ((_.0 car)) ((_.0 cdr)) ((_.0 cons)) ((_.0 d)) ((_.0 e))
+                ((_.0 f)) ((_.0 if)) ((_.0 null?)) ((_.1 a)) ((_.1 append))
+                ((_.1 b)) ((_.1 c)) ((_.1 car)) ((_.1 cdr)) ((_.1 cons))
+                ((_.1 d)) ((_.1 e)) ((_.1 f)) ((_.1 if)) ((_.1 null?)))
+           (sym _.0 _.1)))))
+
 ;; slow
 (time (test "slow append case with unknown args and result"
   (run 1 (code)
@@ -35,6 +64,122 @@
         '((lambda (l s) (if (null? l) s (cons (car l) (append (_.0 . _.1) s)))))))
 
 ;; map tests
+
+;; from Barliman tests
+(time
+   (test 'map-hard-0-gensym
+     (run 1 (code)
+       (let ((g1 (gensym "g1"))
+             (g2 (gensym "g2"))
+             (g3 (gensym "g3"))
+             (g4 (gensym "g4"))
+             (g5 (gensym "g5"))
+             (g6 (gensym "g6"))
+             (g7 (gensym "g7")))
+         (fresh (a b c)
+           (absento g1 code)
+           (absento g2 code)
+           (absento g3 code)
+           (absento g4 code)
+           (absento g5 code)
+           (absento g6 code)
+           (absento g7 code)
+           (== `(lambda (f xs)
+                  (if (null? xs)
+                      ,a (cons ,b (map f ,c))))
+               code)
+           (evalo `(letrec ((map ,code))
+                     (list
+                      (map ',g1 '())
+                      (map car '((,g2 . ,g3)))
+                      (map cdr '((,g4 . ,g5) (,g6 . ,g7)))))
+                  (list '() `(,g2) `(,g5 ,g7))))))
+     '((lambda (f xs) (if (null? xs) xs (cons (f (car xs)) (map f (cdr xs))))))))
+
+(time
+   (test 'map-hard-3-gensym
+     (run 1 (code)
+       (let ((g1 (gensym "g1"))
+             (g2 (gensym "g2"))
+             (g3 (gensym "g3"))
+             (g4 (gensym "g4"))
+             (g5 (gensym "g5"))
+             (g6 (gensym "g6"))
+             (g7 (gensym "g7")))
+         (fresh (a)
+           (absento g1 code)
+           (absento g2 code)
+           (absento g3 code)
+           (absento g4 code)
+           (absento g5 code)
+           (absento g6 code)
+           (absento g7 code)
+           (== `(lambda (f xs) ,a)
+               code)
+           (evalo `(letrec ((map ,code))
+                     (list
+                      (map ',g1 '())
+                      (map car '((,g2 . ,g3)))
+                      (map cdr '((,g4 . ,g5) (,g6 . ,g7)))))
+                  (list '() `(,g2) `(,g5 ,g7))))))
+     '((lambda (f xs) (if (null? xs) xs (cons (f (car xs)) (map f (cdr xs))))))))
+
+(time
+   (test 'map-hard-3b-gensym
+     (run 1 (code)
+       (let ((g1 (gensym "g1"))
+             (g2 (gensym "g2"))
+             (g3 (gensym "g3"))
+             (g4 (gensym "g4"))
+             (g5 (gensym "g5"))
+             (g6 (gensym "g6"))
+             (g7 (gensym "g7")))
+         (fresh (x y a)
+           (absento g1 code)
+           (absento g2 code)
+           (absento g3 code)
+           (absento g4 code)
+           (absento g5 code)
+           (absento g6 code)
+           (absento g7 code)
+           (== `(lambda (,x ,y) ,a)
+               code)
+           (evalo `(letrec ((map ,code))
+                     (list
+                      (map ',g1 '())
+                      (map car '((,g2 . ,g3)))
+                      (map cdr '((,g4 . ,g5) (,g6 . ,g7)))))
+                  (list '() `(,g2) `(,g5 ,g7))))))
+     '((lambda (f xs) (if (null? xs) xs (cons (f (car xs)) (map f (cdr xs))))))))
+
+;; takes 95 seconds on Will's lappy
+#|
+(time
+   (test 'map-hard-4-gensym
+     (run 1 (code)
+       (let ((g1 (gensym "g1"))
+             (g2 (gensym "g2"))
+             (g3 (gensym "g3"))
+             (g4 (gensym "g4"))
+             (g5 (gensym "g5"))
+             (g6 (gensym "g6"))
+             (g7 (gensym "g7")))
+         (fresh (a)
+           (absento g1 code)
+           (absento g2 code)
+           (absento g3 code)
+           (absento g4 code)
+           (absento g5 code)
+           (absento g6 code)
+           (absento g7 code)
+           (evalo `(letrec ((map ,code))
+                     (list
+                      (map ',g1 '())
+                      (map car '((,g2 . ,g3)))
+                      (map cdr '((,g4 . ,g5) (,g6 . ,g7)))))
+                  (list '() `(,g2) `(,g5 ,g7))))))
+     '(((lambda (_.0 _.1) (if (null? _.1) _.1 (cons (_.0 (car _.1)) (map _.0 (cdr _.1))))) (=/= ((_.0 _.1)) ((_.0 car)) ((_.0 cdr)) ((_.0 cons)) ((_.0 g1)) ((_.0 g2)) ((_.0 g3)) ((_.0 g4)) ((_.0 g5)) ((_.0 g6)) ((_.0 g7)) ((_.0 if)) ((_.0 map)) ((_.0 null?)) ((_.1 car)) ((_.1 cdr)) ((_.1 cons)) ((_.1 g1)) ((_.1 g2)) ((_.1 g3)) ((_.1 g4)) ((_.1 g5)) ((_.1 g6)) ((_.1 g7)) ((_.1 if)) ((_.1 map)) ((_.1 null?))) (sym _.0 _.1)))))
+|#
 
 ;; (time (test "map-0"
 ;;         (run* (q)
@@ -151,37 +296,37 @@
 ;;            (=/= ((_.5 closure)) ((_.5 prim)) ((_.8 closure)) ((_.8 prim)) ((_.9 closure)) ((_.9 prim)))
 ;;            (sym _.5 _.8 _.9) (absento (closure _.0) (closure _.1) (closure _.2) (closure _.3) (closure _.4) (closure _.6) (closure _.7) (prim _.0) (prim _.1) (prim _.2) (prim _.3) (prim _.4) (prim _.6) (prim _.7))))))
 
-;; #|
-;; ;; doesn't come back quickly
-;; ;; probably need more context:  when lambda is passed in as an argument, there is not necessarily an 'if' immediately in the body.
-;; (time (test "map-6a"
-;;         (run 1 (q r)
-;;           (evalo
-;;            `(letrec ((map
-;;                       (lambda (p ls)
-;;                         (if (null? ls)
-;;                             '()
-;;                             (cons (p (car ls)) (map p (cdr ls)))))))
-;;               (map (lambda . ,q) ,r))
-;;            '(#f #f #t #f #t #t)))
-;;         '???))
-;; |#
+#|
+;; doesn't come back quickly
+;; probably need more context:  when lambda is passed in as an argument, there is not necessarily an 'if' immediately in the body.
+(time (test "map-6a"
+        (run 1 (q r)
+          (evalo
+           `(letrec ((map
+                      (lambda (p ls)
+                        (if (null? ls)
+                            '()
+                            (cons (p (car ls)) (map p (cdr ls)))))))
+              (map (lambda . ,q) ,r))
+           '(#f #f #t #f #t #t)))
+        '???))
+|#
 
-;; #|
-;; ;; probably need more context:  when lambda is passed in as an argument, there is not necessarily an 'if' immediately in the body.
-;; ;; doesn't come back
-;; (time (test "map-6b"
-;;         (run 10 (q r)
-;;           (evalo
-;;            `(letrec ((map
-;;                       (lambda (p ls)
-;;                         (if (null? ls)
-;;                             '()
-;;                             (cons (p (car ls)) (map p (cdr ls)))))))
-;;               (map (lambda . ,q) ,r))
-;;            '(#f #f #t #f #t #t)))
-;;         '???))
-;; |#
+#|
+;; probably need more context:  when lambda is passed in as an argument, there is not necessarily an 'if' immediately in the body.
+;; doesn't come back
+(time (test "map-6b"
+        (run 10 (q r)
+          (evalo
+           `(letrec ((map
+                      (lambda (p ls)
+                        (if (null? ls)
+                            '()
+                            (cons (p (car ls)) (map p (cdr ls)))))))
+              (map (lambda . ,q) ,r))
+           '(#f #f #t #f #t #t)))
+        '???))
+|#
 
 ;; ;; slow!
 ;; ;; probably need more context:  when lambda is passed in as an argument, there is not necessarily an 'if' immediately in the body.
@@ -392,20 +537,6 @@
 ;;              (#f #f #t #f #t #t))))
 ;;         '(((null? ls) ls cons (p (car ls))))))
 
-
-;; ;; FIXME why in the world does this test appear to fail when I load this file?
-;; ;;
-;; ;; Testing "map-19"
-;; ;; Failed: (run 1 (q r s t u v w) (evalo `(letrec ((map (lambda (p ls) (if ,q ,r (,s (,t (,u ,v)) (map p (cdr ls))))))) (list (map symbol? '()) (map symbol? '(8)) (map symbol? '(quux)) (map symbol? '(5 6 foo 7 bar baz)))) '(() (#f) (#t) (#f #f #t #f #t #t))))
-;; ;; Expected: (((null? ls) ls cons p car ls))
-;; ;; Computed: (((null? ls) ls cons p car ls _.0))
-;; ;; (time (test "map-19" ...))
-;; ;;     250 collections
-;; ;;     5.318724000s elapsed cpu time, including 0.832374000s collecting
-;; ;;     5.327199000s elapsed real time, including 0.835247000s collecting
-;; ;;     2113712640 bytes allocated, including 2116475472 bytes reclaimed
-;; ;;
-;; ;; The failed message doesn't even show the 'w' variable!  Instead, we see 'ls'.  Am I loading the wrong file?  Is there something wrong with the test macro?  The test seems to run when I load it in the REPL.  I feel like I must be doing something stupid.
 ;; (time (test "map-19"
 ;;         (run 1 (q r s t u v w)
 ;;           (evalo
@@ -1086,7 +1217,7 @@
                 s
                 (cons (car l) (append (cdr l) s)))))))
 
-#|
+
 (time (test "append-19g"
         (run 1 (code)
           (fresh (q r s t u v w)
@@ -1114,7 +1245,7 @@
             (if (null? l)
                 s
                 (cons (car l) (append (cdr l) s)))))))
-|#
+
 
 (time (test "append-20"
         (run 1 (q r s)
