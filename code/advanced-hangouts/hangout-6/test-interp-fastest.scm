@@ -4,30 +4,35 @@
 (load "test-check.scm")
 
 ;; slow
-(run 1 (code)
-  (fresh (u v w x y val)
-    (== `(lambda (l s)
-           (if (null? l)
-               s
-               (cons (car l) (append ,u s))))
-        code)
-    (evalo
-     `(letrec ((append ,code))
-        (append ,x ,y))
-     val)))
+(time (test "slow append case with unknown args and result"
+  (run 1 (code)
+    (fresh (u v w x y val)
+      (== `(lambda (l s)
+             (if (null? l)
+                 s
+                 (cons (car l) (append ,u s))))
+          code)
+      (evalo
+       `(letrec ((append ,code))
+          (append ,x ,y))
+       val)))
+  '(((lambda (l s) (if (null? l) s (cons (car l) (append (cdr '(_.0)) s)))) (absento (closure _.0) (prim _.0))))))
+
 
 ;; fast
-(run 1 (code)
-  (fresh (u v w x y val)
-    (== `(lambda (l s)
-           (if (null? l)
-               s
-               (cons (car l) (append (,u . ,v) s))))
-        code)
-    (evalo
-     `(letrec ((append ,code))
-        (append ,x ,y))
-     val)))
+(time (test "fast append case with unknown args and result"
+        (run 1 (code)
+          (fresh (u v w x y val)
+            (== `(lambda (l s)
+                   (if (null? l)
+                       s
+                       (cons (car l) (append (,u . ,v) s))))
+                code)
+            (evalo
+             `(letrec ((append ,code))
+                (append ,x ,y))
+             val)))
+        '(((lambda (l s) (if (null? l) s (cons (car l) (append (cdr '(_.0)) s)))) (absento (closure _.0) (prim _.0))))))
 
 ;; map tests
 
@@ -953,9 +958,41 @@
                 s
                 (cons (car l) (append (cdr l) s)))))))
 
-(time (test "slow-append-19-with-appendos-on-recursive-args"
+
+;; (time (test "slow-append-19-with-appendos-on-recursive-args"
+;;         (run 1 (code)
+;;           (fresh (q r s t u v w val)
+;;             (absento 'a code)
+;;             (absento 'b code)
+;;             (absento 'c code)
+;;             (absento 'd code)
+;;             (absento 'e code)
+;;             (absento 'f code)
+;;             (absento 's u)
+;;             (absento 'append u)
+;;             (absento 'l v)
+;;             (absento 'append v)
+;;             (== `(lambda (l s)
+;;                    (if (null? l)
+;;                        s
+;;                        (cons (car l) (append ,u ,v))))
+;;                 code)
+;;             (evalo
+;;              `(letrec ((append ,code))
+;;                 (list
+;;                  (append '() 'a)
+;;                  (append '(b) 'c)
+;;                  (append '(d e) 'f)))
+;;              val)))
+;;         '((lambda (l s)
+;;             (if (null? l)
+;;                 s
+;;                 (cons (car l) (append (cdr l) s)))))))
+
+
+(time (test "append-19-with-few-absentos-on-recursive-args"
         (run 1 (code)
-          (fresh (q r s t u v w val)
+          (fresh (q r s t u v w)
             (absento 'a code)
             (absento 'b code)
             (absento 'c code)
@@ -974,15 +1011,53 @@
             (evalo
              `(letrec ((append ,code))
                 (list
-                 (append '() 'a)
-                 (append '(b) 'c)
-                 (append '(d e) 'f)))
-             val)))
+                  (append '() 'a)
+                  (append '(b) 'c)
+                  (append '(d e) 'f)))
+             '(a
+               (b . c)
+               (d e . f)))))
         '((lambda (l s)
             (if (null? l)
                 s
                 (cons (car l) (append (cdr l) s)))))))
 
+(time (test "append-19-with-many-absentos-on-recursive-args"
+        (run 1 (code)
+          (fresh (q r s t u v w)
+            (absento 'a code)
+            (absento 'b code)
+            (absento 'c code)
+            (absento 'd code)
+            (absento 'e code)
+            (absento 'f code)
+            (=/= 's u)
+            (=/= 'append u)
+            (=/= 'null? u)
+            (=/= 'car u)
+            (=/= 'cdr u)
+            (=/= 'cons u)
+            (=/= 'list u)
+            (=/= 'l v)
+            (=/= 'append v)
+            (== `(lambda (l s)
+                   (if (null? l)
+                       s
+                       (cons (car l) (append ,u ,v))))
+                code)
+            (evalo
+             `(letrec ((append ,code))
+                (list
+                  (append '() 'a)
+                  (append '(b) 'c)
+                  (append '(d e) 'f)))
+             '(a
+               (b . c)
+               (d e . f)))))
+        '((lambda (l s)
+            (if (null? l)
+                s
+                (cons (car l) (append (cdr l) s)))))))
 
 (time (test "append-19g"
         (run 1 (code)
