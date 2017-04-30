@@ -88,7 +88,8 @@
          ((make-eval-expo 'app-rator) rator env `(prim . car))
          (fresh (d)
            (== `((,val . ,d)) a*)
-           (=/= 'closure val))
+           (=/= 'closure val)
+           (=/= 'prim val))
          (eval-listo rands env a* 'app-rand*)))
 
       ((fresh (rator x* rands a* prim-id)
@@ -96,7 +97,8 @@
          ((make-eval-expo 'app-rator) rator env `(prim . cdr))
          (fresh (a)
            (== `((,a . ,val)) a*)
-           (=/= 'closure a))
+           (=/= 'closure a)
+           (=/= 'prim a))
          (eval-listo rands env a* 'app-rand*)))
 
       ((fresh (rator x* rands a* prim-id)
@@ -230,11 +232,13 @@
     [(== prim-id 'car)
      (fresh (d)
        (== `((,val . ,d)) a*)
-       (=/= 'closure val))]
+       (=/= 'closure val)
+       (=/= 'prim val))]
     [(== prim-id 'cdr)
      (fresh (a)
        (== `((,a . ,val)) a*)
-       (=/= 'closure a))]
+       (=/= 'closure a)
+       (=/= 'prim a))]
     [(== prim-id 'not)
      (fresh (b)
        (== `(,b) a*)
@@ -367,7 +371,7 @@
 (define (literalo t)
   (conde
     ((numbero t))
-    ((symbolo t) (=/= 'closure t))
+    ((symbolo t) (=/= 'closure t) (=/= 'prim t))
     ((booleano t))
     ((== '() t))))
 
@@ -399,6 +403,7 @@
   (fresh (val)
     (symbolo var)
     (=/= 'closure mval)
+    (=/= 'prim mval)
     (conde
       ((== mval val)
        (== penv penv-out)
@@ -479,6 +484,7 @@
     ((fresh (p)
        (== (list 'unquote p) quasi-p)
        (=/= 'closure mval)
+       (=/= 'prim mval)       
        (p-no-match p mval penv penv-out)))
     ((fresh (a d)
        (== `(,a . ,d) quasi-p)

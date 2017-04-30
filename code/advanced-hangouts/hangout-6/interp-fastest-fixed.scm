@@ -192,7 +192,7 @@
          (fresh (a)
            (== `((,a . ,val)) a*)
            (=/= 'closure a)
-           (=/= 'prim val))
+           (=/= 'prim a))
          (eval-listo rands env a* 'prim-app-rand*)))
 
       ((fresh (rator x* rands a* prim-id)
