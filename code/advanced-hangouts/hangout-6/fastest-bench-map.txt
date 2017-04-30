@@ -1,0 +1,115 @@
+Chez Scheme Version 9.4.1
+Copyright 1984-2016 Cisco Systems, Inc.
+
+> (load "test-interp-fastest.scm")
+Testing "map-0"
+(time (test "map-0" ...))
+    1 collection
+    0.012672000s elapsed cpu time, including 0.000222000s collecting
+    0.012800000s elapsed real time, including 0.000226000s collecting
+    7679456 bytes allocated, including 8320112 bytes reclaimed
+Testing "map-1"
+(time (test "map-1" ...))
+    2 collections
+    0.034069000s elapsed cpu time, including 0.000408000s collecting
+    0.034797000s elapsed real time, including 0.000424000s collecting
+    20601104 bytes allocated, including 17158224 bytes reclaimed
+Testing "map-2"
+(time (test "map-2" ...))
+    68 collections
+    1.175691000s elapsed cpu time, including 0.046238000s collecting
+    1.180967000s elapsed real time, including 0.046606000s collecting
+    572896848 bytes allocated, including 571918720 bytes reclaimed
+Testing "map-3"
+(time (test "map-3" ...))
+    5 collections
+    0.066701000s elapsed cpu time, including 0.001000000s collecting
+    0.068242000s elapsed real time, including 0.001021000s collecting
+    43945088 bytes allocated, including 42030112 bytes reclaimed
+Testing "map-4"
+(time (test "map-4" ...))
+    10 collections
+    0.137789000s elapsed cpu time, including 0.002532000s collecting
+    0.138867000s elapsed real time, including 0.002592000s collecting
+    80799248 bytes allocated, including 84255600 bytes reclaimed
+Testing "map-5"
+(time (test "map-5" ...))
+    33 collections
+    0.474754000s elapsed cpu time, including 0.012721000s collecting
+    0.478544000s elapsed real time, including 0.012909000s collecting
+    276033328 bytes allocated, including 279668192 bytes reclaimed
+Testing "map-7"
+(time (test "map-7" ...))
+    530 collections
+    11.483030000s elapsed cpu time, including 0.990284000s collecting
+    11.531676000s elapsed real time, including 0.996676000s collecting
+    4461232864 bytes allocated, including 4412527200 bytes reclaimed
+Testing "map-8"
+(time (test "map-8" ...))
+    3 collections
+    0.040403000s elapsed cpu time, including 0.000664000s collecting
+    0.041184000s elapsed real time, including 0.000690000s collecting
+    22745568 bytes allocated, including 26400816 bytes reclaimed
+Testing "map-9"
+(time (test "map-9" ...))
+    6 collections
+    0.089189000s elapsed cpu time, including 0.001784000s collecting
+    0.090343000s elapsed real time, including 0.002249000s collecting
+    53486896 bytes allocated, including 50358672 bytes reclaimed
+Testing "map-10"
+(time (test "map-10" ...))
+    11 collections
+    0.146212000s elapsed cpu time, including 0.003543000s collecting
+    0.148651000s elapsed real time, including 0.003689000s collecting
+    85209136 bytes allocated, including 92172000 bytes reclaimed
+Testing "map-11"
+(time (test "map-11" ...))
+    10 collections
+    0.148326000s elapsed cpu time, including 0.005685000s collecting
+    0.149646000s elapsed real time, including 0.005758000s collecting
+    85850752 bytes allocated, including 90892464 bytes reclaimed
+Testing "map-12"
+(time (test "map-12" ...))
+    17 collections
+    0.259862000s elapsed cpu time, including 0.016447000s collecting
+    0.262394000s elapsed real time, including 0.016536000s collecting
+    140912304 bytes allocated, including 140901488 bytes reclaimed
+Testing "map-13"
+(time (test "map-13" ...))
+    237 collections
+    5.305654000s elapsed cpu time, including 0.625921000s collecting
+    5.347623000s elapsed real time, including 0.632020000s collecting
+    1998181488 bytes allocated, including 2001684560 bytes reclaimed
+Testing "map-14"
+(time (test "map-14" ...))
+    250 collections
+    7.626401000s elapsed cpu time, including 1.142144000s collecting
+    7.725536000s elapsed real time, including 1.159115000s collecting
+    2113710624 bytes allocated, including 2065329376 bytes reclaimed
+Testing "map-15"
+(time (test "map-15" ...))
+    879 collections
+    28.634457000s elapsed cpu time, including 4.007304000s collecting
+    28.946495000s elapsed real time, including 4.054065000s collecting
+    7407461792 bytes allocated, including 7397804224 bytes reclaimed
+Testing "map-16"
+(time (test "map-16" ...))
+    984 collections
+    25.144686000s elapsed cpu time, including 3.587469000s collecting
+    25.312438000s elapsed real time, including 3.621671000s collecting
+    8288730176 bytes allocated, including 8309414960 bytes reclaimed
+Testing "map-17"
+(time (test "map-17" ...))
+    940 collections
+    75.634515000s elapsed cpu time, including 2.276380000s collecting
+    76.052347000s elapsed real time, including 2.291535000s collecting
+    7922133680 bytes allocated, including 7904476048 bytes reclaimed
+Testing "map-18"
+(time (test "map-18" ...))
+    940 collections
+    75.639920000s elapsed cpu time, including 2.281725000s collecting
+    76.075915000s elapsed real time, including 2.300328000s collecting
+    7917608928 bytes allocated, including 7931929360 bytes reclaimed
+Testing "map-19"
+  C-c C-cbreak> r
+> 
