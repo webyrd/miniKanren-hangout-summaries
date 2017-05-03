@@ -16,12 +16,17 @@ Summaries of intro and advanced miniKanren hangout series. * Add one or two more
 * Advanced: Sundays, 3PM EST
 
 ## Planning/Agenda for next hangout:
-### Advanced (2017-04-30)
-* TBD
-### Intro (2017-04-29)
-* Adding recursive definitions to the interpreter.  Other interpreter stuff!
+### Advanced (2017-05-07)
+* Continue optimizing the interpreter from hangout #6.
+### Intro (2017-05-06)
+* Will is travelling--no hangout!
 
 ## Recaps of Prior Hangouts
+
+### Advanced #6 (2017-04-30)
+* Youtube link: https://www.youtube.com/watch?v=4cDsePg5c3k
+* Topics:Lots of live coding.  We fix an error in the relational interpreter, try to understand why a version of the relational interpreter is slow when handling recursion, and combine one of the Barliman optimizations with the n-gram relational interpreter.  The resulting interpreter seems faster than Barliman, for at least some synthesis problems.
+* Code: https://github.com/webyrd/miniKanren-hangout-summaries/tree/master/code/advanced-hangouts/hangout-6
 
 ### Advanced #5 (2017-04-23)
 * Youtube link: https://www.youtube.com/watch?v=KTS5XYeZZW4
@@ -48,6 +53,11 @@ Summaries of intro and advanced miniKanren hangout series. * Add one or two more
 ### Advanced #1 (2017-03-26)
 * Youtube link: https://www.youtube.com/watch?v=QZaTB92NKHM
 * Topics: Quick Barliman overview, implementation of faster-miniKanren (https://github.com/michaelballantyne/faster-miniKanren), and more!
+
+### Intro #6 (2017-04-29)
+* Youtube link: https://www.youtube.com/watch?v=Q1BH1L6nrt8
+* Topics: With special guest, Dan Friedman!  Lots of live coding.  We add 'letrec' to our interpreter, using the "half-closures" implementation technique.  We run into a few "happy accidents" along the way.
+* Code: https://github.com/webyrd/miniKanren-hangout-summaries/tree/master/code/intro-hangouts/intro-hangout-6
 
 ### Intro #5 (2017-04-22)
 * Youtube link: https://www.youtube.com/watch?v=2eYPZ5ztTUw
