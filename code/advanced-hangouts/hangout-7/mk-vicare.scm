@@ -3,7 +3,7 @@
 ; directory, else this file would load mk.scm.
 
 
-; Trie implementation, due to Abdulaziz Ghuloum. Used for substitution
+; Old trie implementation, due to Abdulaziz Ghuloum. Used for substitution
 ; and constraint store.
 
   ;;; subst ::= (empty)
@@ -18,28 +18,96 @@
 
 (define unshift (lambda (n i) (fx+ (fxsll n 1) i)))
 
-;;; interface
 
-(define t:size
-  (lambda (x) (t:aux:size x)))
+;; Switched to N-way Trie implementation to reduce depth
+
+(define shift-size 4)
+(define node-size (fxsll 1 shift-size))
+(define local-mask (fx- node-size 1))
+(define (shift-n xi) (fxsra xi shift-size))
+(define (local-n xi) (fxand xi local-mask))
+(define node-n? vector?)
+(define (node-n-new i0 v0)
+  (define result (make-vector (fx+ i0 1) '()))
+  (vector-set! result i0 v0)
+  result)
+(define (node-n-get nd idx)
+  (if (fx<? idx (vector-length nd)) (vector-ref nd idx) '()))
+(define (node-n-put nd idx val)
+  (define len0 (vector-length nd))
+  (define len1 (fxmax len0 (fx+ idx 1)))
+  (define result (make-vector len1 '()))
+  (let copy ((ci 0))
+    (if (fx=? len0 ci) (begin (vector-set! result idx val) result)
+      (begin (vector-set! result ci (vector-ref nd ci)) (copy (fx+ ci 1))))))
+
+(define (nwt:size trie)
+  (cond
+    ((node-n? trie)
+     (let loop ((ci 0) (sz 0))
+       (if (fx=? node-size ci) sz
+         (loop (fx+ ci 1) (fx+ sz (nwt:size (node-n-get trie ci)))))))
+    ((data? trie) 1)
+    (else 0)))
+
+(define (nwt:lookup trie xi)
+  (cond
+    ((node-n? trie) (nwt:lookup (node-n-get trie (local-n xi)) (shift-n xi)))
+    ((data? trie) (and (fx=? xi (data-idx trie)) trie))
+    (else #f)))
+
+(define (nwt:bind trie xi val)
+  (cond
+    ((node-n? trie)
+     (let ((li (local-n xi)))
+       (node-n-put trie li (nwt:bind (node-n-get trie li) (shift-n xi) val))))
+    ((data? trie)
+     (let ((xi0 (data-idx trie)))
+       (if (fx=? xi0 xi) (make-data xi val)
+         (nwt:bind (node-n-new (local-n xi0) (make-data (shift-n xi0) (data-val trie)))
+                   xi val))))
+    (else (make-data xi val))))
+
+;;; n-way trie interface
+
+(define t:size nwt:size)
 
 (define t:bind
   (lambda (xi v s)
     (unless (and (fixnum? xi) (>= xi 0))
       (error 't:bind "index must be a fixnum, got ~s" xi))
-    (t:aux:bind xi v s)))
-
-(define t:unbind
-  (lambda (xi s)
-    (unless (and (fixnum? xi) (>= xi 0))
-      (error 't:unbind "index must be a fixnum, got ~s" xi))
-    (t:aux:unbind xi s)))
+    (nwt:bind s xi v)))
 
 (define t:lookup
   (lambda (xi s)
     (unless (and (fixnum? xi) (>= xi 0))
       (error 't:lookup "index must be a fixnum, got ~s" xi))
-    (t:aux:lookup xi s)))
+    (nwt:lookup s xi)))
+
+;;; old interface
+
+;(define t:size
+  ;(lambda (x) (t:aux:size x)))
+
+;(define t:bind
+  ;(lambda (xi v s)
+    ;(unless (and (fixnum? xi) (>= xi 0))
+      ;(error 't:bind "index must be a fixnum, got ~s" xi))
+    ;(t:aux:bind xi v s)))
+
+;(define t:unbind
+  ;(lambda (xi s)
+    ;(unless (and (fixnum? xi) (>= xi 0))
+      ;(error 't:unbind "index must be a fixnum, got ~s" xi))
+    ;(t:aux:unbind xi s)))
+
+;(define t:lookup
+  ;(lambda (xi s)
+    ;(unless (and (fixnum? xi) (>= xi 0))
+      ;(error 't:lookup "index must be a fixnum, got ~s" xi))
+    ;(t:aux:lookup xi s)))
+
+;;; interface
 
 (define t:binding-value
   (lambda (s)
@@ -166,7 +234,10 @@
 
 (define set-c
   (lambda (v c st)
-    (state (state-S st) (t:bind (var-idx v) c (state-C st)))))
+    (state (state-S st)
+           (t:bind (var-idx v) c (state-C st))
+           (state-depth st)
+           (state-deferred st))))
 
 (define lookup-c
   (lambda (v st)
@@ -180,7 +251,7 @@
 (define remove-c
   (lambda (v st)
     (let ((res (t:bind (var-idx v) empty-c (state-C st))))
-      (state (state-S st) res))))
+      (state (state-S st) res (state-depth st) (state-deferred st)))))
 
 
 ; Misc. missing functions

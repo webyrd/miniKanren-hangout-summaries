@@ -4,6 +4,12 @@
 ; and substitutions will contain a scope. When a substitution flows through a
 ; conde it is assigned a new scope.
 
+;; To allow use of optimizations that sacrifice completeness, set this to #t.
+(define allow-incomplete-search? #f)
+
+;; To allow use of experimental `conde1` optimization, set this to #t.
+(define enable-conde1? #t)
+
 ; Creates a new scope that is not scope-eq? to any other scope
 (define new-scope
   (lambda ()
@@ -172,19 +178,62 @@
 ; Contains:
 ;   S - the substitution
 ;   C - the constraint store
+;   depth - the current search depth in terms of `conde` nesting
+;   deferred - expensive goals that will be tried later
+
+; TODO: use set! to choose appropriate max-search-depth per-run?
+(define max-search-depth
+  ;#f  ; unlimited depth
+  ; Is this a reasonable depth for typical Barliman problems?
+  100)
 
 (define state
-  (lambda (S C)
-    (cons S C)))
+  (lambda (S C depth deferred)
+    (list S C depth deferred)))
 
 (define state-S (lambda (st) (car st)))
-(define state-C (lambda (st) (cdr st)))
+(define state-C (lambda (st) (cadr st)))
+(define state-depth (lambda (st) (caddr st)))
+(define state-deferred (lambda (st) (cadddr st)))
+(define state-depth-set
+  (lambda (st depth)
+    (state (state-S st) (state-C st) depth (state-deferred st))))
+(define state-depth-deepen
+  (lambda (st)
+    (let ((next-depth (+ 1 (state-depth st))))
+      (if (and allow-incomplete-search?
+               max-search-depth (< max-search-depth next-depth))
+        (mzero)
+        (state (state-S st) (state-C st) next-depth (state-deferred st))))))
+(define state-deferred-defer
+  (lambda (st goal)
+    (let ((deferred (state-deferred st)))
+      (if deferred
+        (state (state-S st)
+               (state-C st)
+               (state-depth st)
+               (cons goal (state-deferred st)))
+        (goal st)))))
+(define state-deferred-resume
+  (lambda (st)
+    (let ((deferred (state-deferred st)))
+      (if (and deferred (pair? deferred))
+        ((fold-left (lambda (g1 g0)
+                      (lambda (st)
+                        (bind (g0 st) g1)))
+                    unit
+                    deferred)
+         (state (state-S st) (state-C st) (state-depth st) #f))
+        st))))
 
-(define empty-state (state empty-subst empty-C))
+(define (empty-state) (state empty-subst empty-C 0 (and enable-conde1? '())))
 
 (define state-with-scope
   (lambda (st new-scope)
-    (state (subst-with-scope (state-S st) new-scope) (state-C st))))
+    (state (subst-with-scope (state-S st) new-scope)
+           (state-C st)
+           (state-depth st)
+           (state-deferred st))))
 
 ; Unification
 
@@ -253,6 +302,7 @@
     ((_ e) (lambda () e))))
 
 (define empty-f (inc (mzero)))
+(define pause (lambda (c) (inc c)))
 
 (define-syntax lambdag@
   (syntax-rules ()
@@ -271,6 +321,23 @@
          (else (let ((c (car c-inf)) (f (cdr c-inf)))
                  e3)))))))
 
+(define-syntax let/vars
+  (syntax-rules ()
+    ((_ _ () body) body)
+    ((_ _ () body ...) (begin body ...))
+    ((_ st (qvar ...) body ...)
+     (let ((scope (subst-scope (state-S st))))
+       (let ((qvar (var scope)) ...)
+         body ...)))))
+
+(define-syntax with-depth
+  (syntax-rules ()
+    ((_ dst g) (lambdag@ (st) (g (state-depth-set st (state-depth dst)))))))
+
+(define-syntax bind*-depth
+  (syntax-rules ()
+    ((_ st0 g0 g ...) (bind* (g0 st0) (with-depth st0 g) ...))))
+
 (define-syntax fresh
   (syntax-rules ()
     ((_ (x ...) g0 g ...)
@@ -278,7 +345,7 @@
        (inc
          (let ((scope (subst-scope (state-S st))))
            (let ((x (var scope)) ...)
-             (bind* (g0 st) g ...))))))))
+             (bind*-depth st g0 g ...))))))))
 
 (define-syntax bind*
   (syntax-rules ()
@@ -298,12 +365,12 @@
     ((_ n (q) g0 g ...)
      (take n
        (inc
-         ((fresh (q) g0 g ...
+         ((fresh (q) g0 g ... state-deferred-resume
             (lambdag@ (st)
               (let ((st (state-with-scope st nonlocal-scope)))
                 (let ((z ((reify q) st)))
                   (choice z empty-f)))))
-          empty-state))))
+          (empty-state)))))
     ((_ n (q0 q1 q ...) g0 g ...)
      (run n (x) (fresh (q0 q1 q ...) g0 g ... (== `(,q0 ,q1 ,q ...) x))))))
 
@@ -327,17 +394,114 @@
   (syntax-rules ()
     ((_ (g0 g ...) (g1 g^ ...) ...)
      (lambdag@ (st)
-       (inc
-         (let ((st (state-with-scope st (new-scope))))
-           (mplus*
-             (bind* (g0 st) g ...)
-             (bind* (g1 st) g^ ...) ...)))))))
+       (inc (bind (state-depth-deepen (state-with-scope st (new-scope)))
+                  (lambdag@ (st)
+                    (mplus* (bind*-depth st g0 g ...)
+                            (bind*-depth st g1 g^ ...) ...))))))))
+(define-syntax conde-dfs
+  (syntax-rules ()
+    ((_ (g0 g ...) (g1 g^ ...) ...)
+     (lambdag@ (st)
+       (inc (bind (state-depth-deepen (state-with-scope st (new-scope)))
+                  (lambdag@ (st)
+                    (mplus*-dfs (bind*-depth st g0 g ...)
+                                (bind*-depth st g1 g^ ...) ...))))))))
+(define-syntax conde-weighted
+  (syntax-rules ()
+    ((_ (w0 c0 g0 g ...) (w1 c1 g1 g^ ...) ...)
+     (lambdag@ (st)
+       (inc (bind (state-depth-deepen (state-with-scope st (new-scope)))
+                  (lambdag@ (st)
+                    (mplus*-weighted
+                      (w0 c0 (bind*-depth st g0 g ...))
+                      (w1 c1 (bind*-depth st g1 g^ ...)) ...))))))))
+
+(define-syntax conde$
+  (syntax-rules ()
+    ((_ (g0 g ...) (g1 g^ ...) ...)
+     (lambdag@ (st)
+       (let ((st (state-with-scope st (new-scope))))
+         (mplus*
+           (bind*-depth st g0 g ...)
+           (bind*-depth st g1 g^ ...) ...))))))
+(define-syntax conde$-dfs
+  (syntax-rules ()
+    ((_ (g0 g ...) (g1 g^ ...) ...)
+     (lambdag@ (st)
+       (let ((st (state-with-scope st (new-scope))))
+         (mplus*-dfs
+           (bind*-depth st g0 g ...)
+           (bind*-depth st g1 g^ ...) ...))))))
+(define-syntax conde$-weighted
+  (syntax-rules ()
+    ((_ (w0 c0 g0 g ...) (w1 c1 g1 g^ ...) ...)
+     (lambdag@ (st)
+       (let ((st (state-with-scope st (new-scope))))
+         (mplus*-weighted
+           (w0 c0 (bind*-depth st g0 g ...))
+           (w1 c1 (bind*-depth st g1 g^ ...)) ...))))))
+
+(define-syntax case0
+  (syntax-rules ()
+    ((_ expr zero ((cs) more))
+     (let ((result expr)) (if result (let ((cs result)) more) zero)))))
+
+(define-syntax mplus1*
+  (syntax-rules ()
+    ((_ e) e)
+    ((_ e0 e ...)
+     (case0 e0
+       (mplus1* e ...)
+       ((c0) (mplus0* c0 e ...))))))
+
+(define-syntax mplus0*
+  (syntax-rules ()
+    ((_ unpruned) (if (procedure? unpruned) (unpruned) unpruned))
+    ((_ unpruned e0 e ...)
+     (case0 e0
+       (mplus0* unpruned e ...)
+       ((c0) (inc (mplus unpruned (inc (mplus* c0 e ...)))))))))
+
+(define-syntax let**
+  (syntax-rules ()
+    ((_ () body) body)
+    ((_ (((name val) ...) ... ((name1 val1) ...)) body ...)
+     (let** (((name val) ...) ...) (let* ((name1 val1) ...) body ...)))))
+
+(define-syntax conde1^
+  (syntax-rules ()
+    ((_ conde^ (((name lvar) ...) ...) (g0 g ...) ...)
+     (lambdag@ (st)
+       (let** (((name (walk lvar (state-S st))) ...) ...
+               ((depth (state-depth st))
+                (goal (lambdag@ (st) ((conde^ (g0 g ...) ...)
+                                      (state-depth-set st depth))))
+                (goal-deterministic
+                  (lambdag@ (st) ((conde$ (g0 g ...) ...)
+                                  (state-depth-set st depth))))))
+         (if (and (ormap var? (list name ...)) ...)
+           (state-deferred-defer st goal)
+           (goal-deterministic st)))))))
+(define-syntax conde1
+  (syntax-rules () ((_ body ...) (conde1^ conde body ...))))
+(define-syntax conde1$
+  (syntax-rules () ((_ body ...) (conde1^ conde$ body ...))))
 
 (define-syntax mplus*
   (syntax-rules ()
     ((_ e) e)
     ((_ e0 e ...) (mplus e0
                     (inc (mplus* e ...))))))
+(define-syntax mplus*-dfs
+  (syntax-rules ()
+    ((_ e) e)
+    ((_ e0 e ...) (mplus-dfs e0
+                    (inc (mplus*-dfs e ...))))))
+(define-syntax mplus*-weighted
+  (syntax-rules ()
+    ((_ (_ _ e)) e)
+    ((_ (w0 c0 e0) e ...)
+     (mplus-weighted w0 w0 1 c0 e0 (inc (mplus*-weighted e ...))))))
 
 (define mplus
   (lambda (c-inf f)
@@ -347,6 +511,31 @@
       ((c) (choice c f))
       ((c f^) (choice c (inc (mplus (f) f^)))))))
 
+(define mplus-dfs
+  (lambda (c-inf f)
+    (case-inf c-inf
+      (() (f))
+      ((f^) (inc (mplus-dfs (f^) f)))
+      ((c) (choice c f))
+      ((c f^) (choice c (inc (mplus-dfs (f^) f)))))))
+
+(define (mplus-weighted-next remaining weight other cycles f^ f)
+  (inc (let ((weight-next (and remaining (- remaining 1))))
+         (if (and weight-next (<= weight-next 0))
+           (let ((cycles (and cycles (- cycles 1))))
+             (if (and cycles (<= cycles 0))
+               (mplus (f) f^)
+               (mplus-weighted other other weight cycles (f) f^)))
+           (mplus-weighted weight-next weight other cycles (f^) f)))))
+(define mplus-weighted
+  (lambda (remaining weight other-weight cycles c-inf f)
+    (case-inf c-inf
+      (() (f))
+      ((f^) (inc (mplus-weighted-next
+                   remaining weight other-weight cycles f^ f)))
+      ((c) (choice c f))
+      ((c f^) (choice c (inc (mplus-weighted-next
+                               remaining weight other-weight cycles f^ f)))))))
 
 ; Constraints
 ; C refers to the constraint store map
@@ -434,7 +623,9 @@
     (lambdag@ (st)
       (let-values (((S added) (unify u v (state-S st))))
         (if S
-          (and-foldl update-constraints (state S (state-C st)) added)
+          (and-foldl
+            update-constraints
+            (state S (state-C st) (state-depth st) (state-deferred st)) added)
           (mzero))))))
 
 
@@ -475,6 +666,20 @@
       ((pair? term)
        (vars (cdr term) (vars (car term) acc)))
       (else acc))))
+
+(define-syntax project
+  (syntax-rules ()
+    ((_ (x ...) g g* ...)
+     (lambdag@ (st)
+       (let ((x (walk* x (state-S st))) ...)
+         ((fresh () g g* ...) st))))))
+
+(define-syntax project0
+  (syntax-rules ()
+    ((_ (x ...) g g* ...)
+     (lambdag@ (st)
+       (let ((x (walk x (state-S st))) ...)
+         ((fresh () g g* ...) st))))))
 
 ; Create a constraint store of the old representation from a state object,
 ; so that we can use the old reifier. Only accumulates constraints related
@@ -552,6 +757,48 @@
 (define c->N (lambda (c) (cadddr c)))
 (define c->T (lambda (c) (cadddr (cdr c))))
 
+(define-syntax conda
+  (syntax-rules ()
+    ((_ (g0 g ...) (g1 g^ ...) ...)
+     (lambdag@ (st)
+       ;; is 'state-with-scope' required here, as it is with conde?
+       ;; I don't think so.
+       (inc
+        (ifa ((g0 st) g ...)
+             ((g1 st) g^ ...) ...))))))
+
+(define-syntax ifa
+  (syntax-rules ()
+    ((_) (mzero))
+    ((_ (e g ...) b ...)
+     (let loop ((c-inf e))
+       (case-inf c-inf
+         (() (ifa b ...))
+         ((f) (inc (loop (f))))
+         ((a) (bind* c-inf g ...))
+         ((a f) (bind* c-inf g ...)))))))
+
+(define-syntax condu
+  (syntax-rules ()
+    ((_ (g0 g ...) (g1 g^ ...) ...)
+     (lambdag@ (st)
+       ;; is 'state-with-scope' required here, as it is with conde?
+       ;; I don't think so.
+       (inc
+        (ifu ((g0 st) g ...)
+             ((g1 st) g^ ...) ...))))))
+
+(define-syntax ifu
+  (syntax-rules ()
+    ((_) (mzero))
+    ((_ (e g ...) b ...)
+     (let loop ((c-inf e))
+       (case-inf c-inf
+         (() (ifu b ...))
+         ((f) (inc (loop (f))))
+         ((c) (bind* c-inf g ...))
+         ((c f) (bind* (unit c) g ...)))))))
+
 ; Syntax for reification goal objects using the old constraint store
 (define-syntax lambdar@
   (syntax-rules (:)
@@ -610,6 +857,16 @@
   (lambda (x)
     (call-with-string-output-port
       (lambda (p) (display x p)))))
+
+;;; WEB -- 28 June 2016 -- return #t if walk*'d term t contains a gensym
+;;; (Barliman hack to make the reified answers more readable.)
+(define anygen?
+  (lambda (t)
+    (cond
+      ((pair? t)
+       (or (anygen? (car t))
+           (anygen? (cdr t))))
+      (else (gensym? t)))))
 
 (define anyvar?
   (lambda (u r)
@@ -895,6 +1152,10 @@
 
 (define fail (== #f #t))
 
+(define (onceo g)
+  (condu
+    (g succeed)))
+
 (define ==fail-check
   (lambda (S0 D Y N T)
     (let ([S0 (subst-with-scope S0 nonlocal-scope)])
@@ -938,6 +1199,41 @@
           (walk* N R)
           (rem-subsumed-T (walk* T R)))))
 
+;;; WEB -- 28 June 2016 -- ensure reified value is always a list of
+;;; term followed by (potentially empty) list of constraints
+(define form
+  (lambda (v D Y N T)
+    (let ((fd (sort-D D))
+          (fy (sorter Y))
+          (fn (sorter N))
+          (ft (sorter T)))
+      (let ((fd (if (null? fd) fd
+                    (let ((fd (drop-dot-D fd)))
+                      `((=/= . ,fd)))))
+            (fy (if (null? fy) fy `((sym . ,fy))))
+            (fn (if (null? fn) fn `((num . ,fn))))
+            (ft (if (null? ft) ft
+                    (let ((ft (drop-dot ft)))
+                      `((absento . ,ft))))))
+        (append `(,v) (filter-gensyms (append fd fn fy ft)))))))
+
+;;; WEB -- 27 Oct 2016 -- (hopefully) fixed code that removes constraints containing gensyms
+;;; Must make sure we only remove those portions of a constraint that actually contain gensyms!
+;;; We don't need to worry about symbolo or numbero constraints, since gensyms are symbols!
+(define filter-gensyms
+  (lambda (loc)
+    (cond
+      ((null? loc) '())
+      ((or (eqv? (caar loc) '=/=)
+           (eqv? (caar loc) 'absento))
+       (let ((fc (filter (lambda (c) (not (anygen? c))) (cdar loc))))
+         (if (null? fc)
+             (filter-gensyms (cdr loc))
+             (cons (cons (caar loc) fc)
+                   (filter-gensyms (cdr loc))))))
+      (else (cons (car loc) (filter-gensyms (cdr loc)))))))
+
+#|
 (define form
   (lambda (v D Y N T)
     (let ((fd (sort-D D))
@@ -957,6 +1253,7 @@
                 (null? fn) (null? ft))
            v)
           (else (append `(,v) fd fn fy ft)))))))
+|#
 
 (define sort-D
   (lambda (D)
