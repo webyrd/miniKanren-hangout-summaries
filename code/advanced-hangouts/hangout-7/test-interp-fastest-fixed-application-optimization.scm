@@ -5,6 +5,70 @@
 
 (set! allow-incomplete-search? #t)
 
+(time (test "synthesize-all-of-append-barliman-like-query"
+     (run 1 (code)
+       (let ((g1 (gensym "g1"))
+             (g2 (gensym "g2"))
+             (g3 (gensym "g3"))
+             (g4 (gensym "g4"))
+             (g5 (gensym "g5"))
+             (g6 (gensym "g6"))
+             (g7 (gensym "g7")))
+         (fresh (A B C)
+           (absento g1 code)
+           (absento g2 code)
+           (absento g3 code)
+           (absento g4 code)
+           (absento g5 code)
+           (absento g6 code)
+           (absento g7 code)
+           (== `(lambda ,B ,C) code)
+           (evalo
+             `(letrec ((,A ,code))
+                (list
+                 (append '() '())
+                 (append '(,g1) '(,g2))
+                 (append '(,g3 ,g4) '(,g5 ,g6))))
+             `(()
+               (,g1 ,g2)
+               (,g3 ,g4 ,g5 ,g6))))))
+     '(((lambda (_.0 _.1)
+          (if (null? _.0)
+              _.1
+              (cons (car _.0) (append (cdr _.0) _.1))))
+        (=/= ((_.0 _.1)) ((_.0 append)) ((_.0 car)) ((_.0 cdr)) ((_.0 cons)) ((_.0 if)) ((_.0 null?))
+             ((_.1 append)) ((_.1 car)) ((_.1 cdr)) ((_.1 cons)) ((_.1 if)) ((_.1 null?)))
+        (sym _.0 _.1)))))
+
+(time (test "synthesize-all-of-append-normal-tests"
+        (run 1 (code)
+          (fresh (q r s t u v w)
+            (absento 'a code)
+            (absento 'b code)
+            (absento 'c code)
+            (absento 'd code)
+            (absento 'e code)
+            (absento 'f code)
+            (evalo
+             `(letrec ((append ,code))
+                (list
+                 (append '() '())
+                 (append '(b) '(c))
+                 (append '(d e) '(f g))))
+             '(()
+               (b c)
+               (d e f g)))))
+        '(((lambda (_.0 _.1)
+             (if (null? _.0)
+                 _.1
+                 (cons (car _.0) (append (cdr _.0) _.1))))
+           (=/= ((_.0 _.1)) ((_.0 a)) ((_.0 append)) ((_.0 b)) ((_.0 c))
+                ((_.0 car)) ((_.0 cdr)) ((_.0 cons)) ((_.0 d)) ((_.0 e))
+                ((_.0 f)) ((_.0 if)) ((_.0 null?)) ((_.1 a)) ((_.1 append))
+                ((_.1 b)) ((_.1 c)) ((_.1 car)) ((_.1 cdr)) ((_.1 cons))
+                ((_.1 d)) ((_.1 e)) ((_.1 f)) ((_.1 if)) ((_.1 null?)))
+           (sym _.0 _.1)))))
+
 (time (test "synthesize-all-of-append"
         (run 1 (code)
           (fresh (q r s t u v w)
